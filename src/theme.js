@@ -149,6 +149,18 @@ function ThemeNav () {
         $('.wy-menu p.caption')
             .attr('role', 'heading')
             .attr('aria-level', '2');
+        $('.wy-menu ul').each(function() {
+            var groupHeading = $(this).prev().text();
+            if (groupHeading != "Contents:") {
+                $(this).attr({
+                    'aria-label': groupHeading + ' links group'
+                });
+                $(this).find('li a').each(function() {
+                    var linkTxt = $(this).clone().children('button').remove().end().text();
+                    $(this).attr('aria-label',groupHeading + ', ' + linkTxt);
+                });
+            }
+        });
 
 		// wait for RTD to mess with our page, then get the
 		// last word to change the version picker for accessibility
@@ -357,3 +369,31 @@ if (typeof(window) != 'undefined') {
             clearTimeout(id);
         };
 }());
+
+$(document).ready(function() {
+    $('.headerlink').each(function() {
+      titleText = $(this).parent().clone().children('.headerlink').remove().end().text();
+      $(this).attr('title', 'Permalink to ' + titleText);
+    });
+    $('.rst-other-versions').attr('tabindex', '-1');
+    const vPicker = $(".rst-versions");
+    $(vPicker).focusin(function() {
+      isFocused = true;
+    });
+    $(vPicker).focusout(function() {
+      //var elem = $(this);
+      isFocused = false;
+      setTimeout(function() {
+        if (!isFocused && $(vPicker).hasClass("shift-up")) {
+          $(vPicker).removeClass("shift-up");
+          $(".rst-current-version").attr("aria-expanded", "false");
+        }
+      }, 100);
+    });
+    if($('#maincontent').length === 0){
+        $('[itemprop=articleBody]').prepend('<a id="maincontent" name="maincontent"></a>');
+    };
+    if($('.wy-side-nav-search .skiplink').length === 0){
+        $('.wy-side-nav-search').prepend('<a class="skiplink" href="#maincontent">Skip to main content &gt;</a>');
+    };
+});
